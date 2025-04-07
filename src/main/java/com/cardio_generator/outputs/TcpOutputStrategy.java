@@ -6,12 +6,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 
+/**
+ * {@code TcpOutputStrategy} is an output strategy sending generated data over web server to a client socket.
+ * Each data package is passed in a row forrmat: {@code <patientId>, <timestamp>, <label>, <data>}
+ * 
+ * @author https://github.com/tpepels
+ */
 public class TcpOutputStrategy implements OutputStrategy {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private PrintWriter out;
 
+    /**
+     * Creates {@TcpOutputStrategy} object with server on a specified port
+     * @param port server socket port
+     */
     public TcpOutputStrategy(int port) {
         try {
             serverSocket = new ServerSocket(port);
@@ -31,7 +41,7 @@ public class TcpOutputStrategy implements OutputStrategy {
             e.printStackTrace();
         }
     }
-
+    
     @Override
     public void output(int patientId, long timestamp, String label, String data) {
         if (out != null) {

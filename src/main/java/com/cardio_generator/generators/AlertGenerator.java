@@ -4,11 +4,22 @@ import java.util.Random;
 
 import com.cardio_generator.outputs.OutputStrategy;
 
+/**
+ * Class {@code AlertGenerator} is used for generating alerts for a certain amount of patients. 
+ * Class uses random number generator to tell if the alert is resolved or triggered.
+ * 
+ * @author https://github.com/tpepels
+ */
 public class AlertGenerator implements PatientDataGenerator {
 
     public static final Random randomGenerator = new Random();
     private boolean[] alertStates; // false = resolved, true = pressed
 
+    /**
+     * Creates alert generator for a certain patient count. 
+     * For every patient, it initialises an alert state, which is by default set to {@code false}.
+     * @param patientCount amount of patients
+     */
     public AlertGenerator(int patientCount) {
         alertStates = new boolean[patientCount + 1];
     }
