@@ -7,6 +7,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * {@code FileOutputStrategy} is an output strategy printing generated data to a separate file in
+ * the base directory.
+ * Class will use label from a data generator for naming the file. 
+ * If the file already exists, it will append the current content.
+ * 
+ * @author https://github.com/tpepels
+ */
 public class FileOutputStrategy implements OutputStrategy {
 
     // Changed variable name to camelCase
@@ -15,6 +23,10 @@ public class FileOutputStrategy implements OutputStrategy {
     // Change variable name to camelCase
     public final ConcurrentHashMap<String, String> fileMap = new ConcurrentHashMap<>();
 
+    /**
+     * Creates {@FileOutputStrategy} object with specified base directory
+     * @param baseDirectory target directory, where an output file will be created.
+     */
     public FileOutputStrategy(String baseDirectory) {
         this.baseDirectory = baseDirectory;
     }
@@ -29,7 +41,7 @@ public class FileOutputStrategy implements OutputStrategy {
             return;
         }
         // Set the filePath variable
-         // Line was too long - moved the argument into the next line
+        // Line was too long - moved the argument into the next line
         String filePath = fileMap.computeIfAbsent(
             label, k -> Paths.get(baseDirectory, label + ".txt").toString());
 
