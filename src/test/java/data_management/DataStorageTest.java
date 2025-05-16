@@ -2,8 +2,9 @@ package data_management;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.data_management.DataReader;
+import com.alerts.AlertGenerator;
 import com.data_management.FileDataReader;
+import com.data_management.Patient;
 import org.junit.jupiter.api.Test;
 
 import com.data_management.DataStorage;
@@ -16,7 +17,6 @@ class DataStorageTest {
 
     @Test
     void testAddAndGetRecords() {
-        // TODO Perhaps you can implement a mock data reader to mock the test data?
         // DataReader reader
         String directory = "test_output";
 
@@ -28,7 +28,7 @@ class DataStorageTest {
         try {
             reader.readData(storage);
 
-            assertEquals(storage.getAllPatients().size(), 6);
+            assertEquals(storage.getAllPatients().size(), 7);
 
             List<PatientRecord> records = storage.getRecords(26, 0, 1747042271984L);
 
@@ -38,6 +38,9 @@ class DataStorageTest {
         catch (IOException e) {
             System.out.println(e.getMessage());
         }
-
     }
+
+
+
+
 }
