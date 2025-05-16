@@ -24,10 +24,13 @@ public class FileDataReader implements DataReader {
         }
     }
 
-    private double parseData(String data) {
+    private double parseData(String type, String data) {
         try {
-            if (data.equals("Saturation")) {
+            if (type.equals("Saturation")) {
                 return Double.parseDouble(data.substring(0, data.length() - 1)) / 100.0;
+            }
+            else if (type.equals("Alert")) {
+                return data.equals("triggered") ? 1.0 : 0.0;
             }
             return Double.parseDouble(data);
         }
@@ -51,7 +54,7 @@ public class FileDataReader implements DataReader {
                 int patientID = Integer.parseInt(matcher.group(1));
                 long timestamp = Long.parseLong(matcher.group(2));
                 String measurementType = parseLabel(matcher.group(3));
-                double measurementValue = parseData(matcher.group(4));
+                double measurementValue = parseData(measurementType, matcher.group(4));
 
                 dataStorage.addPatientData(patientID, measurementValue, measurementType, timestamp);
             }
@@ -64,6 +67,7 @@ public class FileDataReader implements DataReader {
     @Override
     public void readData(DataStorage dataStorage) throws IOException {
         String[] files = new String[] {
+                "Alert.txt",
                 "Cholesterol.txt",
                 "DiastolicPressure.txt",
                 "ECG.txt",
