@@ -13,6 +13,9 @@ import java.util.Queue;
  * to check for any abnormal readings.
  */
 public abstract class AlertChecker {
+    /**
+     * Alert queue from which the data is then retrieved using <code>getQueuedAlerts()</code>
+     */
     protected final Queue<Alert> alertQueue = new LinkedList<>();
 
     /**

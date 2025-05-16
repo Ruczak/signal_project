@@ -63,6 +63,10 @@ public class AlertGenerator {
         }
     }
 
+    /**
+     * Sets output strategy
+     * @param outputStrategy target <code>OutputStrategy</code> object
+     */
     public void setOutputStrategy(OutputStrategy outputStrategy) {
         this.outputStrategy = outputStrategy;
     }
@@ -71,9 +75,10 @@ public class AlertGenerator {
      * Triggers an alert for the monitoring system. This method can be extended to
      * notify medical staff, log the alert, or perform other actions. The method
      * currently assumes that the alert information is fully formed when passed as
-     * an argument.
+     * an argument.<br />
      * ASSUMPTION: we can use an output strategy to alert the staff through appropriate
      * communication channel.
+     * If the <code>outputStrategy</code> is null, then this method does not do anything.
      *
      * @param alert the alert object containing details about the alert condition
      */
