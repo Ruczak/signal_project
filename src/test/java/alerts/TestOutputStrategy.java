@@ -1,4 +1,4 @@
-package data_management;
+package alerts;
 
 import com.cardio_generator.outputs.OutputStrategy;
 
