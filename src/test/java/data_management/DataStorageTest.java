@@ -15,13 +15,10 @@ class DataStorageTest {
 
     @Test
     void testAddAndGetRecords() {
-        // DataReader reader
         String directory = "test_output";
-
         FileDataReader reader = new FileDataReader(directory);
 
-        //DataStorage storage = new DataStorage(reader);
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
 
         try {
             reader.readData(storage);

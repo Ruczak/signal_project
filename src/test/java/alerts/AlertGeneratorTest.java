@@ -17,7 +17,7 @@ import java.util.List;
 public class AlertGeneratorTest {
     @Test
     void testAlertEvaluations() {
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
         storage.addPatientData(1, 1.0, "Alert", System.currentTimeMillis());
         storage.addPatientData(1, 0.0, "Alert", System.currentTimeMillis());
 
@@ -41,7 +41,7 @@ public class AlertGeneratorTest {
 
     @Test
     void testBloodPressureEvaluations() {
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
         // begin with normal pressure
         storage.addPatientData(1, 120.0,
                 "Systolic pressure", System.currentTimeMillis());
@@ -119,7 +119,7 @@ public class AlertGeneratorTest {
 
     @Test
     void testBloodSaturationEvaluations() {
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
 
         // start with normal saturation
         storage.addPatientData(1, 99,
@@ -161,7 +161,7 @@ public class AlertGeneratorTest {
 
     @Test
     void testHypotensiveHypoxemiaEvaluations() {
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
 
         // start with normal saturation and systolic pressure
         storage.addPatientData(1, 93,
@@ -196,7 +196,7 @@ public class AlertGeneratorTest {
 
     @Test
     void testECGDataEvaluations() {
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
 
         // start with mock ECG Data readings
         double[] values = new double[] {-0.45992000214722, -0.26240513874290666, 0.20697699323368063,
@@ -209,9 +209,6 @@ public class AlertGeneratorTest {
                 0.07973258395267391, -0.1386795383737087, 0.027669216114580626, -0.2551794049789719,
                 -0.5710093693096615, -0.2583036866852645, -0.5700759854269573, -0.5809739185355152,
                 -0.433872278681971, 0.14976129314350434, -0.34601702707189697, 0.37098528718270296};
-
-        double sum = 0.0;
-        double sumSquared = 0.0;
 
         for (double val : values) {
             storage.addPatientData(1, val,
