@@ -57,7 +57,7 @@ public class Patient {
         
         for (PatientRecord record : patientRecords) {
             if (startTime <= record.getTimestamp() && record.getTimestamp() <= endTime)
-                filteredRecords.addLast(record);
+                filteredRecords.add(record);
         }
 
         return filteredRecords;

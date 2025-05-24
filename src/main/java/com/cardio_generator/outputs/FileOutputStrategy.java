@@ -24,7 +24,7 @@ public class FileOutputStrategy implements OutputStrategy {
     public final ConcurrentHashMap<String, String> fileMap = new ConcurrentHashMap<>();
 
     /**
-     * Creates {@FileOutputStrategy} object with specified base directory
+     * Creates {@code FileOutputStrategy} object with specified base directory
      * @param baseDirectory target directory, where an output file will be created.
      */
     public FileOutputStrategy(String baseDirectory) {
