@@ -1,6 +1,7 @@
 package com.alerts.strategies;
 
 import com.alerts.alert_types.Alert;
+import com.alerts.factories.ECGAlertFactory;
 import com.data_management.PatientRecord;
 
 import java.util.LinkedList;
@@ -15,6 +16,7 @@ public class ECGDataAlertStrategy extends AlertStrategy {
     private final int k;
 
     public ECGDataAlertStrategy(int k) {
+        super(new ECGAlertFactory());
         this.k = k;
     }
 

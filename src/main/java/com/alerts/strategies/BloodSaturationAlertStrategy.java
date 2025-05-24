@@ -1,6 +1,7 @@
 package com.alerts.strategies;
 
 import com.alerts.alert_types.Alert;
+import com.alerts.factories.BloodOxygenAlertFactory;
 import com.data_management.PatientRecord;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class BloodSaturationAlertStrategy extends AlertStrategy {
     private final HashMap<AlertType, Boolean> lastState;
 
     public BloodSaturationAlertStrategy() {
+        super(new BloodOxygenAlertFactory());
         lastState = new HashMap<>();
 
         lastState.put(AlertType.SATURATION_LOW, false);

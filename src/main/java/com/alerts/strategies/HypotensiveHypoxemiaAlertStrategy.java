@@ -1,6 +1,7 @@
 package com.alerts.strategies;
 
 import com.alerts.alert_types.Alert;
+import com.alerts.factories.HypotensiveHypoxemiaAlertFactory;
 import com.data_management.PatientRecord;
 
 /**
@@ -10,6 +11,10 @@ import com.data_management.PatientRecord;
 public class HypotensiveHypoxemiaAlertStrategy extends AlertStrategy {
     PatientRecord lastSystolicMeasure = null;
     PatientRecord lastSaturationMeasure = null;
+
+    public HypotensiveHypoxemiaAlertStrategy() {
+        super(new HypotensiveHypoxemiaAlertFactory());
+    }
 
     @Override
     public void checkAlert(PatientRecord record) {

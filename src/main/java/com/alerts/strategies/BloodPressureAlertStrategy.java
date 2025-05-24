@@ -29,10 +29,10 @@ public class BloodPressureAlertStrategy extends AlertStrategy {
     }
 
     public BloodPressureAlertStrategy() {
+        super(new BloodPressureAlertFactory());
         lastTrend = new HashMap<>();
         lastTrend.put(AlertType.CHANGE, Trend.STABLE);
         lastTrend.put(AlertType.CRITICAL, Trend.STABLE);
-        factory = new BloodPressureAlertFactory();
     }
 
     @Override

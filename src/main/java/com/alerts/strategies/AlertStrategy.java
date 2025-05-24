@@ -22,6 +22,10 @@ public abstract class AlertStrategy {
      */
     protected final Queue<Alert> alertQueue = new LinkedList<>();
 
+    public AlertStrategy(AlertFactory factory) {
+        this.factory = factory;
+    }
+
     /**
      * Polls currently stored alerts and removes them from the queue.
      * @return List of queued alerts
