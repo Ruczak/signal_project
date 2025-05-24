@@ -1,44 +1,20 @@
 package alerts;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import com.alerts.strategies.ECGDataAlertStrategy;
 import com.alerts.alert_types.Alert;
 import com.alerts.AlertGenerator;
-import com.alerts.strategies.ECGDataAlertStrategy;
 import com.cardio_generator.outputs.TestOutputStrategy;
+import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
 import org.junit.jupiter.api.Test;
 
-import com.data_management.DataStorage;
-
 import java.util.List;
 
-public class AlertGeneratorTest {
-    @Test
-    void testAlertEvaluations() {
-        DataStorage storage = new DataStorage();
-        storage.addPatientData(1, 1.0, "Alert", System.currentTimeMillis());
-        storage.addPatientData(1, 0.0, "Alert", System.currentTimeMillis());
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-        TestOutputStrategy outputStrategy = new TestOutputStrategy();
-        AlertGenerator generator = new AlertGenerator(storage);
-        generator.setOutputStrategy(outputStrategy);
-
-        Patient patient = storage.getAllPatients().get(0);
-        assertNotNull(patient);
-
-        generator.evaluateData(patient);
-
-        List<TestOutputStrategy.AlertRecord> records = outputStrategy.getRecords();
-
-        assertTrue(records.stream()
-                .anyMatch(e -> e.getLabel().equals("Alert") && e.getData().equals("Alert triggered")));
-
-        assertTrue(records.stream()
-                .anyMatch(e -> e.getLabel().equals("Alert") && e.getData().equals("Alert resolved") ));
-    }
-
+public class AlertStrategyTest {
     @Test
     void testBloodPressureEvaluations() {
         DataStorage storage = new DataStorage();

@@ -1,5 +1,7 @@
-package com.alerts;
+package com.alerts.strategies;
 
+import com.alerts.alert_types.Alert;
+import com.alerts.factories.AlertFactory;
 import com.data_management.DataStorage;
 import com.data_management.PatientRecord;
 
@@ -12,7 +14,9 @@ import java.util.Queue;
  * Is an abstract class used to process data retrieved form {@link DataStorage}
  * to check for any abnormal readings.
  */
-public abstract class AlertChecker {
+public abstract class AlertStrategy {
+    protected AlertFactory factory;
+
     /**
      * Alert queue from which the data is then retrieved using <code>getQueuedAlerts()</code>
      */
@@ -22,10 +26,18 @@ public abstract class AlertChecker {
      * Polls currently stored alerts and removes them from the queue.
      * @return List of queued alerts
      */
-    public final List<Alert> getQueuedAlerts() {
+    public final List<Alert> pollAlerts() {
         List<Alert> alerts = new ArrayList<>(alertQueue);
         alertQueue.clear();
         return alerts;
+    }
+
+    /**
+     * Adds alert to the queue
+     * @param alert alert to add.
+     */
+    protected void enqueueAlert(Alert alert) {
+        alertQueue.add(alert);
     }
 
     /**
@@ -34,5 +46,5 @@ public abstract class AlertChecker {
      * added to the <code>alertQueue</code>
      * @param record Patient's record to be processed
      */
-    public abstract void checkData(PatientRecord record);
+    public abstract void checkAlert(PatientRecord record);
 }

@@ -1,5 +1,7 @@
 package com.alerts;
 
+import com.alerts.alert_types.Alert;
+import com.alerts.strategies.*;
 import com.cardio_generator.outputs.OutputStrategy;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
@@ -47,17 +49,17 @@ public class AlertGenerator {
         // Implementation goes here
         List<PatientRecord> records = patient.getRecords(0, System.currentTimeMillis());
 
-        List<AlertChecker> checkers = new ArrayList<>();
-        checkers.add(new BloodPressureAlertChecker());
-        checkers.add(new BloodSaturationAlertChecker());
-        checkers.add(new HypotensiveHypoxemiaAlertChecker());
-        checkers.add(new ECGDataAlertChecker(50));
-        checkers.add(new TriggeredAlertChecker());
+        List<AlertStrategy> checkers = new ArrayList<>();
+        checkers.add(new BloodPressureAlertStrategy());
+        checkers.add(new BloodSaturationAlertStrategy());
+        checkers.add(new HypotensiveHypoxemiaAlertStrategy());
+        checkers.add(new ECGDataAlertStrategy(50));
+        checkers.add(new TriggeredAlertStrategy());
 
         for (PatientRecord record : records) {
-            for (AlertChecker checker : checkers) {
-                checker.checkData(record);
-                for (Alert alert : checker.getQueuedAlerts())
+            for (AlertStrategy checker : checkers) {
+                checker.checkAlert(record);
+                for (Alert alert : checker.pollAlerts())
                     triggerAlert(alert);
             }
         }

@@ -1,25 +1,25 @@
-package com.alerts;
+package com.alerts.strategies;
 
+import com.alerts.alert_types.Alert;
 import com.data_management.PatientRecord;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 /**
  * Analyses ECG data to watch out for abnormal peaks.
  */
-public class ECGDataAlertChecker extends AlertChecker {
+public class ECGDataAlertStrategy extends AlertStrategy {
     Queue<Double> previousData = new LinkedList<>();
 
     private final int k;
 
-    public ECGDataAlertChecker(int k) {
+    public ECGDataAlertStrategy(int k) {
         this.k = k;
     }
 
     @Override
-    public void checkData(PatientRecord record) {
+    public void checkAlert(PatientRecord record) {
         if (!record.getRecordType().equals("ECG")) return;
 
         if (previousData.size() >= k) {
@@ -39,7 +39,7 @@ public class ECGDataAlertChecker extends AlertChecker {
 
             // if the data is outside 95%-confidence inteval then raise the alert
             if (mean - 2 * stddev > record.getMeasurementValue() || record.getMeasurementValue() < mean + 2 * stddev) {
-                alertQueue.add(new Alert(String.valueOf(record.getPatientId()),
+                enqueueAlert(factory.getAlert(String.valueOf(record.getPatientId()),
                         "Abnormal ECG reading is detected",
                         record.getTimestamp()));
             }
