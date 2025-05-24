@@ -2,9 +2,7 @@ package data_management;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.alerts.AlertGenerator;
 import com.data_management.FileDataReader;
-import com.data_management.Patient;
 import org.junit.jupiter.api.Test;
 
 import com.data_management.DataStorage;
@@ -39,8 +37,4 @@ class DataStorageTest {
             System.out.println(e.getMessage());
         }
     }
-
-
-
-
 }

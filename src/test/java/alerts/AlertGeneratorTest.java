@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.alerts.Alert;
 import com.alerts.AlertGenerator;
 import com.alerts.ECGDataAlertChecker;
+import com.cardio_generator.outputs.TestOutputStrategy;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
 import org.junit.jupiter.api.Test;

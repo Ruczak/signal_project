@@ -1,6 +1,4 @@
-package alerts;
-
-import com.cardio_generator.outputs.OutputStrategy;
+package com.cardio_generator.outputs;
 
 import java.util.ArrayList;
 import java.util.List;
