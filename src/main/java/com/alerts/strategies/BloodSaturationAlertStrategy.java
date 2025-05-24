@@ -1,6 +1,5 @@
 package com.alerts.strategies;
 
-import com.alerts.alert_types.Alert;
 import com.alerts.factories.BloodOxygenAlertFactory;
 import com.data_management.PatientRecord;
 

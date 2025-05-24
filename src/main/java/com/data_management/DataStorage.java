@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import com.alerts.AlertGenerator;
 
-import javax.xml.crypto.Data;
-
 /**
  * Manages storage and retrieval of patient data within a healthcare monitoring
  * system.
