@@ -15,23 +15,16 @@ class DataStorageTest {
 
     @Test
     void testAddAndGetRecords() {
-        String directory = "test_output";
-        FileDataReader reader = new FileDataReader(directory);
 
         DataStorage storage = DataStorage.getInstance();
+        storage.addPatientData(1, 96.0, "Saturation", System.currentTimeMillis());
 
-        try {
-            reader.readData(storage);
+        assertEquals(storage.getAllPatients().size(), 1);
 
-            assertEquals(storage.getAllPatients().size(), 7);
+        List<PatientRecord> records = storage.getRecords(1, 0, 1800000000000L);
 
-            List<PatientRecord> records = storage.getRecords(26, 0, 1747042271984L);
+        assertEquals(records.size(), 1);
+        assertEquals(records.get(0).getMeasurementValue(), 96.0);
 
-            assertEquals(records.size(), 1);
-            assertEquals(records.get(0).getMeasurementValue(), 154.8512924660576);
-        }
-        catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
     }
 }
