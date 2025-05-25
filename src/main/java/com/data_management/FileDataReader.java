@@ -4,44 +4,24 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.*;
 
 public class FileDataReader implements DataReader {
     private final String directory;
 
+    private final List<DataReaderListener> listeners = new ArrayList<>();
+
     public FileDataReader(String directory) {
         this.directory = directory;
     }
 
-    private String parseLabel(String label) {
-        switch (label) {
-            case "WhiteBloodCells": return "White blood cells";
-            case "RedBloodCells":  return "Red blood cells";
-            case "SystolicPressure":  return "Systolic pressure";
-            case "DiastolicPressure":  return "Diastolic pressure";
-            default: return label;
-        }
-    }
-
-    private double parseData(String type, String data) {
-        try {
-            if (type.equals("Saturation")) {
-                return Double.parseDouble(data.substring(0, data.length() - 1)) / 100.0;
-            }
-            else if (type.equals("Alert")) {
-                return data.equals("triggered") ? 1.0 : 0.0;
-            }
-            return Double.parseDouble(data);
-        }
-        catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    public void readFile(DataStorage dataStorage, File file) throws IOException {
+    public void readFile(File file) throws IOException {
         try (FileReader fileReader = new FileReader(file)) {
+            DataStorage dataStorage = DataStorage.getInstance();
             Scanner scanner = new Scanner(fileReader);
+
+            Map<Patient, Integer> newRecords = new HashMap<>();
 
             Pattern regex = Pattern.compile("Patient ID: ([^,]+), Timestamp: ([0-9]+), Label: (.+), Data: (.+)");
             while (fileReader.ready()) {
@@ -53,10 +33,19 @@ public class FileDataReader implements DataReader {
 
                 int patientID = Integer.parseInt(matcher.group(1));
                 long timestamp = Long.parseLong(matcher.group(2));
-                String measurementType = parseLabel(matcher.group(3));
-                double measurementValue = parseData(measurementType, matcher.group(4));
+                String measurementType = matcher.group(3);
+                double measurementValue = Parser.parse(measurementType, matcher.group(4));
 
-                dataStorage.addPatientData(patientID, measurementValue, measurementType, timestamp);
+                Patient patient = dataStorage.addPatientData(patientID, measurementValue, measurementType, timestamp);
+
+                if (!newRecords.containsKey(patient)) {
+                    newRecords.put(patient, 0);
+                }
+                newRecords.put(patient, newRecords.get(patient) + 1);
+            }
+
+            for (Map.Entry<Patient, Integer> entry : newRecords.entrySet()) {
+                triggerEvent(entry.getKey(), entry.getValue());
             }
         }
         catch (FileNotFoundException e) {
@@ -65,7 +54,24 @@ public class FileDataReader implements DataReader {
     }
 
     @Override
-    public void readData(DataStorage dataStorage) throws IOException {
+    public void addListener(DataReaderListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(DataReaderListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public void triggerEvent(Patient patient, int i) {
+        for (DataReaderListener listener : listeners) {
+            listener.onRead(patient, i);
+        }
+    }
+
+    @Override
+    public void refresh() {
         String[] files = new String[] {
                 "Alert.txt",
                 "Cholesterol.txt",
@@ -78,8 +84,12 @@ public class FileDataReader implements DataReader {
         };
 
         for (String filename : files) {
-            File file = new File(directory, filename);
-            readFile(dataStorage, file);
+            try {
+                File file = new File(directory, filename);
+                readFile(file);
+            } catch (IOException e) {
+                System.err.println("Error reading file: " + filename);
+            }
         }
     }
 }
