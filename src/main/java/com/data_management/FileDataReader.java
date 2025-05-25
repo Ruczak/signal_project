@@ -23,20 +23,11 @@ public class FileDataReader implements DataReader {
 
             Map<Patient, Integer> newRecords = new HashMap<>();
 
-            Pattern regex = Pattern.compile("Patient ID: ([^,]+), Timestamp: ([0-9]+), Label: (.+), Data: (.+)");
             while (fileReader.ready()) {
-                String line = scanner.nextLine();
+                Parser.Message message = Parser.decode(scanner.nextLine());
+                if (message == null) continue;
 
-                Matcher matcher = regex.matcher(line);
-
-                if (!matcher.matches()) continue;
-
-                int patientID = Integer.parseInt(matcher.group(1));
-                long timestamp = Long.parseLong(matcher.group(2));
-                String measurementType = matcher.group(3);
-                double measurementValue = Parser.parse(measurementType, matcher.group(4));
-
-                Patient patient = dataStorage.addPatientData(patientID, measurementValue, measurementType, timestamp);
+                Patient patient = dataStorage.addPatientData(message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp());
 
                 if (!newRecords.containsKey(patient)) {
                     newRecords.put(patient, 0);

@@ -4,36 +4,39 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class WebSocketClient extends org.java_websocket.client.WebSocketClient implements DataReader {
-    List<DataReaderListener> listeners = new ArrayList<>();
+public class WebSocketClient implements DataReader {
+    private final List<DataReaderListener> listeners = new ArrayList<>();
 
-    Queue<String> messages = new LinkedList<>();
+    private org.java_websocket.client.WebSocketClient websocket;
+
+    private Queue<String> messages = new LinkedList<>();
 
     public WebSocketClient(URI serverUri) {
-        super(serverUri);
-    }
+        websocket = new org.java_websocket.client.WebSocketClient(serverUri) {
+            @Override
+            public void onOpen(ServerHandshake serverHandshake) {
+                System.out.println("Websocket connection opened. ");
+            }
 
-    @Override
-    public void onOpen(ServerHandshake serverHandshake) {
-        System.out.println("Websocket connection opened. ");
-    }
+            @Override
+            public void onMessage(String s) {
+                messages.offer(s);
+                System.out.println("Message received: " + s);
+            }
 
-    @Override
-    public void onMessage(String s) {
-        messages.offer(s);
-    }
+            @Override
+            public void onClose(int i, String s, boolean b) {
+                System.out.println("Websocket connection closed. ");
+            }
 
-    @Override
-    public void onClose(int i, String s, boolean b) {
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+            }
+        };
 
-    }
-
-    @Override
-    public void onError(Exception e) {
-        e.printStackTrace();
+        websocket.connect();
     }
 
     @Override
@@ -55,20 +58,15 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient i
 
     @Override
     public void refresh() {
-        Pattern regex = Pattern.compile("Patient ID: ([^,]+), Timestamp: ([0-9]+), Label: (.+), Data: (.+)");
         DataStorage dataStorage = DataStorage.getInstance();
         while (!messages.isEmpty()) {
-            String message = messages.poll();
+            String str = messages.poll();
+            Parser.Message message = Parser.decode(str);
+            if (message == null) continue;
 
-            Matcher matcher = regex.matcher(message);
-            if (!matcher.matches()) continue;
-
-            int patientID = Integer.parseInt(matcher.group(1));
-            long timestamp = Long.parseLong(matcher.group(2));
-            String measurementType = matcher.group(3);
-            double measurementValue = Parser.parse(measurementType, matcher.group(4));
-
-            triggerEvent(dataStorage.addPatientData(patientID, measurementValue, measurementType, timestamp), 1);
+            triggerEvent(
+                    dataStorage.addPatientData(
+                            message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp()), 1);
         }
     }
 }
