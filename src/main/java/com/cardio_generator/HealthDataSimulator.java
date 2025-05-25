@@ -40,10 +40,6 @@ public class HealthDataSimulator {
     private OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
     private final Random random = new Random();
 
-    private HealthDataSimulator() {
-        new HealthDataSimulator();
-    }
-
     public static HealthDataSimulator getInstance() {
         if (instance == null) {
             instance = new HealthDataSimulator();

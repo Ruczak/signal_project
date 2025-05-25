@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.alerts.AlertGenerator;
+import com.cardio_generator.outputs.ConsoleOutputStrategy;
 
 /**
  * Manages storage and retrieval of patient data within a healthcare monitoring
@@ -51,13 +52,15 @@ public class DataStorage {
      * @param timestamp        the time at which the measurement was taken, in
      *                         milliseconds since the Unix epoch
      */
-    public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
+    public Patient addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
         Patient patient = patientMap.get(patientId);
         if (patient == null) {
             patient = new Patient(patientId);
             patientMap.put(patientId, patient);
         }
         patient.addRecord(measurementValue, recordType, timestamp);
+
+        return patient;
     }
 
     /**
@@ -102,29 +105,31 @@ public class DataStorage {
         DataReader reader = new FileDataReader("./output");
         DataStorage storage = DataStorage.getInstance();
 
-        try {
-            // Assuming the reader has been properly initialized and can read data into the storage
-            reader.readData(storage);
 
-            // Example of using DataStorage to retrieve and print records for a patient
-            List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
-            for (PatientRecord record : records) {
-                System.out.println("Record for Patient ID: " + record.getPatientId() +
-                        ", Type: " + record.getRecordType() +
-                        ", Data: " + record.getMeasurementValue() +
-                        ", Timestamp: " + record.getTimestamp());
-            }
+        // Assuming the reader has been properly initialized and can read data into the storage
+        // Example of using DataStorage to retrieve and print records for a patient
+//            List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
+//            for (PatientRecord record : records) {
+//                System.out.println("Record for Patient ID: " + record.getPatientId() +
+//                        ", Type: " + record.getRecordType() +
+//                        ", Data: " + record.getMeasurementValue() +
+//                        ", Timestamp: " + record.getTimestamp());
+//            }
 
-            // Initialize the AlertGenerator with the storage
-            AlertGenerator alertGenerator = new AlertGenerator(storage);
+        // Initialize the AlertGenerator with the storage
+        AlertGenerator alertGenerator = new AlertGenerator(storage);
+        alertGenerator.setOutputStrategy(new ConsoleOutputStrategy());
 
-            // Evaluate all patients' data to check for conditions that may trigger alerts
-            for (Patient patient : storage.getAllPatients()) {
+        // Evaluate all patients' data to check for conditions that may trigger alerts
+        DataReaderListener listener = new DataReaderListener() {
+            @Override
+            public void onRead(Patient patient, int i) {
                 alertGenerator.evaluateData(patient);
             }
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
+        };
+
+        reader.addListener(listener);
+
+        reader.refresh();
     }
 }
