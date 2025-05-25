@@ -29,7 +29,7 @@ public class DataReaderTest {
         Field f = DataStorage.class.getDeclaredField("instance");
         f.setAccessible(true);
         f.set(null, null);
-
+    }
 
     @Test
     void testFileDataReader() {
