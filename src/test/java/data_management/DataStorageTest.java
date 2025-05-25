@@ -12,6 +12,12 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 class DataStorageTest {
+    @BeforeEach
+    public void setUp() throws Exception {
+        Field field = DataStorage.class.getDeclaredField("instance");
+        field.setAccessible(true);
+        field.set(null, null);
+    }
 
     // needed due to sharing memory between test after using 'mvn clean test'
     @BeforeEach
