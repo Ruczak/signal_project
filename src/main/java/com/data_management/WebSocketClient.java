@@ -7,17 +7,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
+/**
+ * Serves web socket connection for incoming patient data.
+ */
 public class WebSocketClient implements DataReader {
     private final List<DataReaderListener> listeners = new ArrayList<>();
 
     private org.java_websocket.client.WebSocketClient websocket;
 
-    private Queue<String> messages = new LinkedList<>();
+    private final Queue<String> messages = new LinkedList<>();
 
-    private URI serverUri;
+    private final URI serverUri;
 
     public WebSocketClient(URI serverUri) {
         this.serverUri = serverUri;
+        establishConnection();
     }
 
     public void establishConnection() {
@@ -58,9 +62,9 @@ public class WebSocketClient implements DataReader {
     }
 
     @Override
-    public void triggerEvent(Patient patient, int i) {
+    public void triggerEvent(Patient patient) {
         for (DataReaderListener listener : listeners) {
-            listener.onRead(patient, i);
+            listener.onRead(patient);
         }
     }
 
@@ -70,11 +74,11 @@ public class WebSocketClient implements DataReader {
         while (!messages.isEmpty()) {
             try {
                 String str = messages.poll();
-                Parser.Message message = Parser.decode(str);
+                Parser.ParsedData parsedData = Parser.decode(str);
 
                 triggerEvent(
                         dataStorage.addPatientData(
-                                message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp()), 1);
+                                parsedData.getPatientId(), parsedData.getData(), parsedData.getLabel(), parsedData.getTimestamp()));
             } catch (IllegalArgumentException e) {
                 throw new IOException("Received faulty message. ");
             }

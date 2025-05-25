@@ -118,12 +118,12 @@ public class DataReaderTest {
                 () -> Parser.decode("Patient ID: 130, Timestamp: 2025-05-10 14:00:00, Label: RedBloodCells, Data: 20.0")
         );
 
-        Parser.Message message = Parser.decode("Patient ID: 130, Timestamp: 1800000000000, Label: RedBloodCells, Data: 20.0");
+        Parser.ParsedData parsedData = Parser.decode("Patient ID: 130, Timestamp: 1800000000000, Label: RedBloodCells, Data: 20.0");
 
-        assertEquals(130, message.getPatientId());
-        assertEquals(1800000000000L, message.getTimestamp());
-        assertEquals("RedBloodCells", message.getLabel());
-        assertEquals(20.0, message.getData());
+        assertEquals(130, parsedData.getPatientId());
+        assertEquals(1800000000000L, parsedData.getTimestamp());
+        assertEquals("RedBloodCells", parsedData.getLabel());
+        assertEquals(20.0, parsedData.getData());
     }
 
     private void writeToTempFile(String filename, String data) {

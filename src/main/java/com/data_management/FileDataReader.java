@@ -5,42 +5,57 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.*;
 
+/**
+ * Implements a real-time file reading method for patient data stored in a local directory.
+ */
 public class FileDataReader implements DataReader {
     private final String directory;
 
     private final List<DataReaderListener> listeners = new ArrayList<>();
 
+    private final String[] files = new String[] {
+            "Alert.txt",
+            "Cholesterol.txt",
+            "DiastolicPressure.txt",
+            "ECG.txt",
+            "RedBloodCells.txt",
+            "Saturation.txt",
+            "SystolicPressure.txt",
+            "WhiteBloodCells.txt",
+    };
+
+    /**
+     * @param directory directory with all the data.
+     */
     public FileDataReader(String directory) {
         this.directory = directory;
     }
 
-    public void readFile(File file) throws IOException, FileNotFoundException {
+    /**
+     * Reads specific file
+     * @param file instance of the read file.
+     * @throws IOException if file was not found or the file contained faulty data.
+     */
+    public void readFile(File file) throws IOException {
         try (FileReader fileReader = new FileReader(file)) {
             DataStorage dataStorage = DataStorage.getInstance();
             Scanner scanner = new Scanner(fileReader);
 
-            Map<Patient, Integer> newRecords = new HashMap<>();
+            Set<Patient> newRecords = new HashSet<>();
 
             while (fileReader.ready()) {
                 try {
-                    Parser.Message message = Parser.decode(scanner.nextLine());
-
-                    Patient patient = dataStorage.addPatientData(message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp());
-
-                    if (!newRecords.containsKey(patient)) {
-                        newRecords.put(patient, 0);
-                    }
-                    newRecords.put(patient, newRecords.get(patient) + 1);
+                    Parser.ParsedData parsedData = Parser.decode(scanner.nextLine());
+                    Patient patient = dataStorage.addPatientData(parsedData.getPatientId(), parsedData.getData(), parsedData.getLabel(), parsedData.getTimestamp());
+                    newRecords.add(patient);
                 } catch (IllegalArgumentException e) {
                     throw new IOException(e.getMessage());
                 }
-
             }
 
-            for (Map.Entry<Patient, Integer> entry : newRecords.entrySet()) {
-                triggerEvent(entry.getKey(), entry.getValue());
+            for (Patient patient : newRecords) {
+                triggerEvent(patient);
             }
         }
         catch (FileNotFoundException e) {
@@ -59,25 +74,14 @@ public class FileDataReader implements DataReader {
     }
 
     @Override
-    public void triggerEvent(Patient patient, int i) {
+    public void triggerEvent(Patient patient) {
         for (DataReaderListener listener : listeners) {
-            listener.onRead(patient, i);
+            listener.onRead(patient);
         }
     }
 
     @Override
     public void refresh() throws IOException {
-        String[] files = new String[] {
-                "Alert.txt",
-                "Cholesterol.txt",
-                "DiastolicPressure.txt",
-                "ECG.txt",
-                "RedBloodCells.txt",
-                "Saturation.txt",
-                "SystolicPressure.txt",
-                "WhiteBloodCells.txt",
-        };
-
         for (String filename : files) {
             File file = new File(directory, filename);
             readFile(file);

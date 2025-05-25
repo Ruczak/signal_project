@@ -14,6 +14,9 @@ public class ECGDataAlertStrategy extends AlertStrategy {
 
     private final int k;
 
+    /**
+     * @param k maximum data points used for sliding window
+     */
     public ECGDataAlertStrategy(int k) {
         super(new ECGAlertFactory());
         this.k = k;

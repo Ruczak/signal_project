@@ -3,17 +3,23 @@ package com.data_management;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Provides parsing procedure for received input from different sources
+ */
 public class Parser {
     private static final Pattern regex = Pattern.compile(
             "Patient ID: ([^,]+), Timestamp: ([0-9]+), Label: (.+), Data: (.+)");
 
-    public static class Message {
-        private int patientId;
-        private long timestamp;
-        private String label;
-        private double data;
+    /**
+     * Class that represents parsed input
+     */
+    public static class ParsedData {
+        private final int patientId;
+        private final long timestamp;
+        private final String label;
+        private final double data;
 
-        public Message(int patientId, long timestamp, String label, double data) {
+        public ParsedData(int patientId, long timestamp, String label, double data) {
             this.patientId = patientId;
             this.timestamp = timestamp;
             this.label = label;
@@ -37,7 +43,13 @@ public class Parser {
         }
     }
 
-    public static Message decode(String line) throws IllegalArgumentException {
+    /**
+     * Decodes a line input.
+     * @param line input string (line) from a data source
+     * @return {@code ParsedData} object.
+     * @throws IllegalArgumentException if a line does not match
+     */
+    public static ParsedData decode(String line) throws IllegalArgumentException {
         Matcher matcher = regex.matcher(line);
         if (!matcher.matches()) throw new IllegalArgumentException(
                 "The message format does not match the pattern. (message: \"" + line + "\")");
@@ -48,7 +60,7 @@ public class Parser {
             String measurementType = matcher.group(3);
             double measurementValue = getMeasurementValue(measurementType, matcher);
 
-            return new Message(patientID, timestamp, measurementType, measurementValue);
+            return new ParsedData(patientID, timestamp, measurementType, measurementValue);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     "The numbers in the message do not match their respective types. (message: \"" + line + "\")");

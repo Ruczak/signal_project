@@ -118,7 +118,7 @@ public class DataStorage {
             alertGenerator.setOutputStrategy(new ConsoleOutputStrategy());
 
             // Evaluate all patients' data to check for conditions that may trigger alerts
-            DataReaderListener listener = (patient, i) -> alertGenerator.evaluateData(patient);
+            DataReaderListener listener = alertGenerator::evaluateData;
 
             fileReader.addListener(listener);
             websocketReader.addListener(listener);
