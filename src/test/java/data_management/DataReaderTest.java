@@ -2,8 +2,7 @@ package data_management;
 
 import com.cardio_generator.outputs.OutputStrategy;
 import com.cardio_generator.outputs.WebSocketOutputStrategy;
-import com.data_management.DataStorage;
-import com.data_management.FileDataReader;
+import com.data_management.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,8 +15,6 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.data_management.PatientRecord;
-import com.data_management.WebSocketClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -51,7 +48,7 @@ public class DataReaderTest {
 
         FileDataReader reader = new FileDataReader(temp.toString());
 
-        reader.refresh();
+        assertDoesNotThrow(reader::refresh);
 
         assertEquals(7, storage.getAllPatients().size());
         assertTrue(storage.getAllPatients().stream().allMatch(patient ->
@@ -72,11 +69,11 @@ public class DataReaderTest {
 
         Thread.sleep(1000); // need to wait for connection
 
+        // test valid input
         server.output(1, 1747042262033L, "WhiteBloodCells", "8.018321362894895");
+        Thread.sleep(250);
 
-        Thread.sleep(1000);
-
-        client.refresh();
+        assertDoesNotThrow(client::refresh);
 
         assertEquals(1, storage.getAllPatients().size());
 
@@ -90,6 +87,43 @@ public class DataReaderTest {
         } catch (NoSuchElementException e) {
             fail();
         }
+
+        // test invalid input
+        server.output(1, 1747042262033L, "WhiteBloodCells", "Example invalid record");
+
+        Thread.sleep(250);
+
+        assertEquals(1, storage.getRecords(1, 0, 1800000000000L).size());
+    }
+
+    @Test
+    void testParser() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Parser.decode("Invalid message")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Parser.decode("Patient ID: 13.0, Timestamp: 1800000000000, Label: RedBloodCells, Data: 20.0")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Parser.decode("Patient ID: 130, Timestamp: 1800000000000L, Label: RedBloodCells, Data: Some Invalid Data")
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Parser.decode("Patient ID: 130, Timestamp: 2025-05-10 14:00:00, Label: RedBloodCells, Data: 20.0")
+        );
+
+        Parser.Message message = Parser.decode("Patient ID: 130, Timestamp: 1800000000000, Label: RedBloodCells, Data: 20.0");
+
+        assertEquals(130, message.getPatientId());
+        assertEquals(1800000000000L, message.getTimestamp());
+        assertEquals("RedBloodCells", message.getLabel());
+        assertEquals(20.0, message.getData());
     }
 
     private void writeToTempFile(String filename, String data) {

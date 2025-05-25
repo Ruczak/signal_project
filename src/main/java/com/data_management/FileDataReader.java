@@ -16,7 +16,7 @@ public class FileDataReader implements DataReader {
         this.directory = directory;
     }
 
-    public void readFile(File file) throws IOException {
+    public void readFile(File file) throws IOException, FileNotFoundException {
         try (FileReader fileReader = new FileReader(file)) {
             DataStorage dataStorage = DataStorage.getInstance();
             Scanner scanner = new Scanner(fileReader);
@@ -24,15 +24,19 @@ public class FileDataReader implements DataReader {
             Map<Patient, Integer> newRecords = new HashMap<>();
 
             while (fileReader.ready()) {
-                Parser.Message message = Parser.decode(scanner.nextLine());
-                if (message == null) continue;
+                try {
+                    Parser.Message message = Parser.decode(scanner.nextLine());
 
-                Patient patient = dataStorage.addPatientData(message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp());
+                    Patient patient = dataStorage.addPatientData(message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp());
 
-                if (!newRecords.containsKey(patient)) {
-                    newRecords.put(patient, 0);
+                    if (!newRecords.containsKey(patient)) {
+                        newRecords.put(patient, 0);
+                    }
+                    newRecords.put(patient, newRecords.get(patient) + 1);
+                } catch (IllegalArgumentException e) {
+                    throw new IOException(e.getMessage());
                 }
-                newRecords.put(patient, newRecords.get(patient) + 1);
+
             }
 
             for (Map.Entry<Patient, Integer> entry : newRecords.entrySet()) {
@@ -62,7 +66,7 @@ public class FileDataReader implements DataReader {
     }
 
     @Override
-    public void refresh() {
+    public void refresh() throws IOException {
         String[] files = new String[] {
                 "Alert.txt",
                 "Cholesterol.txt",
@@ -75,12 +79,8 @@ public class FileDataReader implements DataReader {
         };
 
         for (String filename : files) {
-            try {
-                File file = new File(directory, filename);
-                readFile(file);
-            } catch (IOException e) {
-                System.err.println("Error reading file: " + filename);
-            }
+            File file = new File(directory, filename);
+            readFile(file);
         }
     }
 }

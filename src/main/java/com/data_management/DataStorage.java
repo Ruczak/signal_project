@@ -1,12 +1,17 @@
 package com.data_management;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.alerts.AlertGenerator;
 import com.cardio_generator.outputs.ConsoleOutputStrategy;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 /**
  * Manages storage and retrieval of patient data within a healthcare monitoring
@@ -101,35 +106,36 @@ public class DataStorage {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        // DataReader is not defined in this scope, should be initialized appropriately.
-        DataReader reader = new FileDataReader("./output");
-        DataStorage storage = DataStorage.getInstance();
+        try {
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
+            DataReader fileReader = new FileDataReader("./output");
+            DataReader websocketReader = new WebSocketClient(URI.create("ws://localhost:8080"));
+            DataStorage storage = DataStorage.getInstance();
 
-        // Assuming the reader has been properly initialized and can read data into the storage
-        // Example of using DataStorage to retrieve and print records for a patient
-//            List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
-//            for (PatientRecord record : records) {
-//                System.out.println("Record for Patient ID: " + record.getPatientId() +
-//                        ", Type: " + record.getRecordType() +
-//                        ", Data: " + record.getMeasurementValue() +
-//                        ", Timestamp: " + record.getTimestamp());
-//            }
+            // Initialize the AlertGenerator with the storage
+            AlertGenerator alertGenerator = new AlertGenerator(storage);
+            alertGenerator.setOutputStrategy(new ConsoleOutputStrategy());
 
-        // Initialize the AlertGenerator with the storage
-        AlertGenerator alertGenerator = new AlertGenerator(storage);
-        alertGenerator.setOutputStrategy(new ConsoleOutputStrategy());
+            // Evaluate all patients' data to check for conditions that may trigger alerts
+            DataReaderListener listener = (patient, i) -> alertGenerator.evaluateData(patient);
 
-        // Evaluate all patients' data to check for conditions that may trigger alerts
-        DataReaderListener listener = new DataReaderListener() {
-            @Override
-            public void onRead(Patient patient, int i) {
-                alertGenerator.evaluateData(patient);
-            }
-        };
+            fileReader.addListener(listener);
+            websocketReader.addListener(listener);
+            scheduler.scheduleAtFixedRate(() -> refreshReader(fileReader), 1, 30, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(() -> refreshReader(websocketReader), 5, 5, TimeUnit.SECONDS);
+        } catch (WebsocketNotConnectedException e) {
+            System.err.println("Couldn't connect to websocket.");
+        } catch (Exception e) {
+            System.err.println("Unexpected error has been thrown in the main code, " + e.getMessage());
+        }
+    }
 
-        reader.addListener(listener);
-
-        reader.refresh();
+    private static void refreshReader(DataReader fileReader) {
+        try {
+            fileReader.refresh();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

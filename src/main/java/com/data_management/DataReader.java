@@ -9,5 +9,5 @@ public interface DataReader {
 
     void triggerEvent(Patient patient, int i);
 
-    void refresh();
+    void refresh() throws IOException;
 }

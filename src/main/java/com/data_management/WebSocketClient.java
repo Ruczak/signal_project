@@ -1,7 +1,9 @@
 package com.data_management;
 
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -12,7 +14,13 @@ public class WebSocketClient implements DataReader {
 
     private Queue<String> messages = new LinkedList<>();
 
+    private URI serverUri;
+
     public WebSocketClient(URI serverUri) {
+        this.serverUri = serverUri;
+    }
+
+    public void establishConnection() {
         websocket = new org.java_websocket.client.WebSocketClient(serverUri) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
@@ -22,7 +30,7 @@ public class WebSocketClient implements DataReader {
             @Override
             public void onMessage(String s) {
                 messages.offer(s);
-                System.out.println("Message received: " + s);
+                //System.out.println("Message received: " + s);
             }
 
             @Override
@@ -32,7 +40,7 @@ public class WebSocketClient implements DataReader {
 
             @Override
             public void onError(Exception e) {
-                e.printStackTrace();
+                throw new WebsocketNotConnectedException();
             }
         };
 
@@ -57,16 +65,19 @@ public class WebSocketClient implements DataReader {
     }
 
     @Override
-    public void refresh() {
+    public void refresh() throws IOException {
         DataStorage dataStorage = DataStorage.getInstance();
         while (!messages.isEmpty()) {
-            String str = messages.poll();
-            Parser.Message message = Parser.decode(str);
-            if (message == null) continue;
+            try {
+                String str = messages.poll();
+                Parser.Message message = Parser.decode(str);
 
-            triggerEvent(
-                    dataStorage.addPatientData(
-                            message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp()), 1);
+                triggerEvent(
+                        dataStorage.addPatientData(
+                                message.getPatientId(), message.getData(), message.getLabel(), message.getTimestamp()), 1);
+            } catch (IllegalArgumentException e) {
+                throw new IOException("Received faulty message. ");
+            }
         }
     }
 }
