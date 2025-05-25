@@ -19,18 +19,26 @@ class DataStorageTest {
         field.set(null, null);
     }
 
+    // needed due to sharing memory between test after using 'mvn clean test'
+    @BeforeEach
+    void resetDataStorage() throws NoSuchFieldException, IllegalAccessException {
+        Field f = DataStorage.class.getDeclaredField("instance");
+        f.setAccessible(true);
+        f.set(null, null);
+    }
+
     @Test
     void testAddAndGetRecords() {
-
         DataStorage storage = DataStorage.getInstance();
+        int count = storage.getAllPatients().size();
+
         storage.addPatientData(1, 96.0, "Saturation", System.currentTimeMillis());
 
-        assertEquals(storage.getAllPatients().size(), 1);
+        assertEquals(count + 1, storage.getAllPatients().size());
 
         List<PatientRecord> records = storage.getRecords(1, 0, 1800000000000L);
 
-        assertEquals(records.size(), 1);
-        assertEquals(records.get(0).getMeasurementValue(), 96.0);
-
+        assertEquals(1, records.size());
+        assertEquals(96.0, records.get(0).getMeasurementValue());
     }
 }
