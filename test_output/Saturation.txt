@@ -1,1 +1,0 @@
-Patient ID: 31, Timestamp: 1747042261993, Label: Saturation, Data: 96.0%

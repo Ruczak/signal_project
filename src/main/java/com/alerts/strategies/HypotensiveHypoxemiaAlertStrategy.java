@@ -1,23 +1,22 @@
-package com.alerts;
+package com.alerts.strategies;
 
+import com.alerts.factories.HypotensiveHypoxemiaAlertFactory;
 import com.data_management.PatientRecord;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Used both blood systolic pressure and saturation readings to determine if patient is at risk of
  * Hypotensive Hypoxemia.
  */
-public class HypotensiveHypoxemiaAlertChecker extends AlertChecker {
+public class HypotensiveHypoxemiaAlertStrategy extends AlertStrategy {
     PatientRecord lastSystolicMeasure = null;
     PatientRecord lastSaturationMeasure = null;
 
+    public HypotensiveHypoxemiaAlertStrategy() {
+        super(new HypotensiveHypoxemiaAlertFactory());
+    }
+
     @Override
-    public void checkData(PatientRecord record) {
+    public void checkAlert(PatientRecord record) {
         if (record.getRecordType().equals("Systolic pressure"))
             lastSystolicMeasure = record;
         else if (record.getRecordType().equals("Saturation"))
@@ -25,7 +24,7 @@ public class HypotensiveHypoxemiaAlertChecker extends AlertChecker {
 
         if (lastSystolicMeasure != null && lastSaturationMeasure != null) {
             if (lastSystolicMeasure.getMeasurementValue() < 90 && lastSaturationMeasure.getMeasurementValue() < 92) {
-                alertQueue.add(new Alert(String.valueOf(record.getPatientId()),
+                enqueueAlert(factory.getAlert(String.valueOf(record.getPatientId()),
                         "Patient is at risk of Hypotensive Hypoxemia",
                         record.getTimestamp()));
             }

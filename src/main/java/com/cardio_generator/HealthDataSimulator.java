@@ -33,12 +33,35 @@ import java.util.ArrayList;
  * @author https://github.com/tpepels
  */
 public class HealthDataSimulator {
-    private static int patientCount = 50; // Default number of patients
-    private static ScheduledExecutorService scheduler;
-    private static OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
-    private static final Random random = new Random();
+    private static HealthDataSimulator instance;
+
+    private int patientCount = 50; // Default number of patients
+    private ScheduledExecutorService scheduler;
+    private OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
+    private final Random random = new Random();
+
+    private HealthDataSimulator() {
+        new HealthDataSimulator();
+    }
+
+    public static HealthDataSimulator getInstance() {
+        if (instance == null) {
+            instance = new HealthDataSimulator();
+        }
+
+        return instance;
+    }
 
     public static void main(String[] args) throws IOException {
+        getInstance().run(args);
+    }
+
+    /**
+     * Runs main code of the {@code HealthDataSimulator}
+     * @param args process arguments
+     * @throws IOException
+     */
+    public void run(String[] args) throws IOException {
         parseArguments(args);
 
         scheduler = Executors.newScheduledThreadPool(patientCount * 4);
@@ -55,7 +78,7 @@ public class HealthDataSimulator {
      * @param args array of arguments
      * @throws IOException
      */
-    private static void parseArguments(String[] args) throws IOException {
+    private void parseArguments(String[] args) throws IOException {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-h":
@@ -119,7 +142,7 @@ public class HealthDataSimulator {
     /**
      * Outputs help into the console.
      */
-    private static void printHelp() {
+    private void printHelp() {
         System.out.println("Usage: java HealthDataSimulator [options]");
         System.out.println("Options:");
         System.out.println("  -h                       Show help and exit.");
@@ -141,7 +164,7 @@ public class HealthDataSimulator {
      * @param patientCount amount of patients to generate
      * @return list of patient IDs
      */
-    private static List<Integer> initializePatientIds(int patientCount) {
+    private List<Integer> initializePatientIds(int patientCount) {
         List<Integer> patientIds = new ArrayList<>();
         for (int i = 1; i <= patientCount; i++) {
             patientIds.add(i);
@@ -153,7 +176,7 @@ public class HealthDataSimulator {
      * Schedules tasks for patients to every patient data generator.
      * @param patientIds list of patient IDs
      */
-    private static void scheduleTasksForPatients(List<Integer> patientIds) {
+    private void scheduleTasksForPatients(List<Integer> patientIds) {
         ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount);
         BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount);
         BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount);
@@ -176,7 +199,7 @@ public class HealthDataSimulator {
      * @param period time between each executtion
      * @param timeUnit unit, for example second/millisecond.
      */
-    private static void scheduleTask(Runnable task, long period, TimeUnit timeUnit) {
+    private void scheduleTask(Runnable task, long period, TimeUnit timeUnit) {
         scheduler.scheduleAtFixedRate(task, random.nextInt(5), period, timeUnit);
     }
 }

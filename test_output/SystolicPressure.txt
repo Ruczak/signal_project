@@ -1,1 +1,0 @@
-Patient ID: 24, Timestamp: 1747042261990, Label: SystolicPressure, Data: 123.0

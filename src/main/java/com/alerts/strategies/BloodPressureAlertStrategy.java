@@ -1,5 +1,6 @@
-package com.alerts;
+package com.alerts.strategies;
 
+import com.alerts.factories.BloodPressureAlertFactory;
 import com.data_management.PatientRecord;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Queue;
 /**
  * Checks for abnormal readings of blood pressure (both systolic/diastolic).
  */
-public class BloodPressureAlertChecker extends AlertChecker {
+public class BloodPressureAlertStrategy extends AlertStrategy {
     private final Queue<Double> systolicQueue = new LinkedList<>();
     private final Queue<Double> diastolicQueue = new LinkedList<>();
 
@@ -26,14 +27,15 @@ public class BloodPressureAlertChecker extends AlertChecker {
         DOWN,
     }
 
-    public BloodPressureAlertChecker() {
+    public BloodPressureAlertStrategy() {
+        super(new BloodPressureAlertFactory());
         lastTrend = new HashMap<>();
         lastTrend.put(AlertType.CHANGE, Trend.STABLE);
         lastTrend.put(AlertType.CRITICAL, Trend.STABLE);
     }
 
     @Override
-    public void checkData(PatientRecord record) {
+    public void checkAlert(PatientRecord record) {
         offerRecord(record);
 
         String type = record.getRecordType();
@@ -101,13 +103,13 @@ public class BloodPressureAlertChecker extends AlertChecker {
         if (type == AlertType.CHANGE) {
             switch (trend) {
                 case UP:
-                    alertQueue.add(new Alert(String.valueOf(patientId),
+                    enqueueAlert(factory.getAlert(String.valueOf(patientId),
                             "Blood pressure is increasing at a high rate (>10 mmHg/reading)",
                             timestamp));
 
                     break;
                 case DOWN:
-                    alertQueue.add(new Alert(String.valueOf(patientId),
+                    enqueueAlert(factory.getAlert(String.valueOf(patientId),
                             "Blood pressure is decreasing at a high rate (>10 mmHg/reading)",
                             timestamp
                     ));
@@ -122,12 +124,12 @@ public class BloodPressureAlertChecker extends AlertChecker {
         if (type == AlertType.CRITICAL) {
             switch (trend) {
                 case UP:
-                    alertQueue.add(new Alert(String.valueOf(patientId),
+                    enqueueAlert(factory.getAlert(String.valueOf(patientId),
                             "Blood pressure is critically high",
                             timestamp));
                     break;
                 case DOWN:
-                    alertQueue.add(new Alert(String.valueOf(patientId),
+                    enqueueAlert(factory.getAlert(String.valueOf(patientId),
                             "Blood pressure is critically low",
                             timestamp));
                     break;

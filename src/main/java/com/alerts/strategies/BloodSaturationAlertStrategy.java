@@ -1,5 +1,6 @@
-package com.alerts;
+package com.alerts.strategies;
 
+import com.alerts.factories.BloodOxygenAlertFactory;
 import com.data_management.PatientRecord;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Queue;
 /**
  * Checks for abnormal blood saturation readings.
  */
-public class BloodSaturationAlertChecker extends AlertChecker {
+public class BloodSaturationAlertStrategy extends AlertStrategy {
     Queue<PatientRecord> saturationQueue = new LinkedList<>();
 
     private enum AlertType {
@@ -19,7 +20,8 @@ public class BloodSaturationAlertChecker extends AlertChecker {
 
     private final HashMap<AlertType, Boolean> lastState;
 
-    public BloodSaturationAlertChecker() {
+    public BloodSaturationAlertStrategy() {
+        super(new BloodOxygenAlertFactory());
         lastState = new HashMap<>();
 
         lastState.put(AlertType.SATURATION_LOW, false);
@@ -27,7 +29,7 @@ public class BloodSaturationAlertChecker extends AlertChecker {
     }
 
     @Override
-    public void checkData(PatientRecord record) {
+    public void checkAlert(PatientRecord record) {
         if (!record.getRecordType().equals("Saturation")) return;
 
         saturationQueue.add(record);
@@ -69,12 +71,12 @@ public class BloodSaturationAlertChecker extends AlertChecker {
     private void addAlert(AlertType type, PatientRecord record) {
         switch (type) {
             case SATURATION_LOW:
-                alertQueue.add(new Alert(String.valueOf(record.getPatientId()),
+                enqueueAlert(factory.getAlert(String.valueOf(record.getPatientId()),
                         "Blood saturation is low (<92%)",
                         record.getTimestamp()));
                 break;
             case SATURATION_DROP:
-                alertQueue.add(new Alert(String.valueOf(record.getPatientId()),
+                enqueueAlert(factory.getAlert(String.valueOf(record.getPatientId()),
                         "Blood saturation fell suddenly by over 5%",
                         record.getTimestamp()));
         }

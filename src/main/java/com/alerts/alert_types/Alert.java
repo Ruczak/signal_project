@@ -1,7 +1,7 @@
-package com.alerts;
+package com.alerts.alert_types;
 
 // Represents an alert
-public class Alert {
+public abstract class Alert {
     private String patientId;
     private String condition;
     private long timestamp;
