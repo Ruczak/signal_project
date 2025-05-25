@@ -2,14 +2,22 @@ package data_management;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.data_management.DataStorage;
 import com.data_management.PatientRecord;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 class DataStorageTest {
+    @BeforeEach
+    public void setUp() throws Exception {
+        Field field = DataStorage.class.getDeclaredField("instance");
+        field.setAccessible(true);
+        field.set(null, null);
+    }
 
     @Test
     void testAddAndGetRecords() {
